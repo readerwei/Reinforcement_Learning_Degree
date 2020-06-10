@@ -8,24 +8,29 @@ from model import Actor, Critic
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
-from torch.utils.tensorboard import SummaryWriter
-writer = SummaryWriter('runs/controlv1')
 
-
-BUFFER_SIZE = int(1e5)  # replay buffer size
+BUFFER_SIZE = int(1e6)  # replay buffer size
 BATCH_SIZE = 256        # minibatch size
-GAMMA = 0.99            # discount factor
+GAMMA = 0.98            # discount factor
+
 TAU = 1e-3              # for soft update of target parameters
-LR_ACTOR = 1e-2         # learning rate of the actor 
-LR_CRITIC = 1e-2        # learning rate of the critic
+LR_ACTOR  = 2e-3         # learning rate of the actor 
+LR_CRITIC = 1e-3        # learning rate of the critic
 WEIGHT_DECAY = 0        # L2 weight decay
+
+EPSILON_DECAY = 2e-6    # decay for epsilon above
+NOISE_SIGMA = 0.05      # sigma for Ornstein-Uhlenbeck noise
+NOISE_THETA = 0.10
+
+L1_SIZE = 128
+L2_SIZE = 64
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 class Agent():
     """Interacts with and learns from the environment."""
     
-    def __init__(self, state_size, action_size, random_seed):
+    def __init__(self, state_size, action_size, random_seed, writer):
         """Initialize an Agent object.
         
         Params
@@ -37,36 +42,40 @@ class Agent():
         self.state_size = state_size
         self.action_size = action_size
         self.seed = random.seed(random_seed)
+        self.writer = writer
 
         # Actor Network (w/ Target Network)
-        self.actor_local = Actor(state_size, action_size, random_seed).to(device)
-        self.actor_target = Actor(state_size, action_size, random_seed).to(device)
+        self.actor_local = Actor(state_size, action_size, random_seed,  fc1_units=L1_SIZE, fc2_units=L2_SIZE).to(device)
+        self.actor_target = Actor(state_size, action_size, random_seed, fc1_units=L1_SIZE, fc2_units=L2_SIZE).to(device)
         self.actor_optimizer = optim.Adam(self.actor_local.parameters(), lr=LR_ACTOR)
         self.actor_running_loss = 0.0
         self.steps = 0
+        self.epsilon = 1.0
 
         # Critic Network (w/ Target Network)
-        self.critic_local = Critic(state_size, action_size, random_seed).to(device)
-        self.critic_target = Critic(state_size, action_size, random_seed).to(device)
+        self.critic_local = Critic(state_size, action_size, random_seed,  fcs1_units=L1_SIZE, fc2_units=L2_SIZE).to(device)
+        self.critic_target = Critic(state_size, action_size, random_seed, fcs1_units=L1_SIZE, fc2_units=L2_SIZE).to(device)
         self.critic_optimizer = optim.Adam(self.critic_local.parameters(), lr=LR_CRITIC, weight_decay=WEIGHT_DECAY)
 
         # Noise process
-        self.noise = OUNoise(action_size, random_seed)
+        self.noise = OUNoise(action_size, random_seed, theta=NOISE_THETA, sigma=NOISE_SIGMA)
 
         # Replay memory
         self.memory = ReplayBuffer(action_size, BUFFER_SIZE, BATCH_SIZE, random_seed)
 
     
-    def step(self, state, action, reward, next_state, done):
+    def step(self, states, actions, rewards, next_states, dones):
         """Save experience in replay memory, and use random sample from buffer to learn."""
         # Save experience / reward
-        self.memory.add(state, action, reward, next_state, done)
+        for state, action, reward, next_state, done in zip(states, actions, rewards, next_states, dones):
+            self.memory.add(state, action, reward, next_state, done)
+#         self.memory.add(state, action, reward, next_state, done)
         self.steps += 1
-        writer.add_scalar('rewards', reward, self.steps)
-        writer.add_scalar('action_1', action[0], self.steps)
-        writer.add_scalar('action_2', action[1], self.steps)
-        writer.add_scalar('action_3', action[2], self.steps)
-        writer.add_scalar('action_4', action[3], self.steps)
+        self.writer.add_scalar('rewards', sum(rewards), self.steps)
+        self.writer.add_scalar('action_1', actions[0][0], self.steps)
+        self.writer.add_scalar('action_2', actions[0][1], self.steps)
+        self.writer.add_scalar('action_3', actions[0][2], self.steps)
+        self.writer.add_scalar('action_4', actions[0][3], self.steps)
         # Learn, if enough samples are available in memory
         if len(self.memory) > BATCH_SIZE:
             experiences = self.memory.sample()
@@ -83,11 +92,11 @@ class Agent():
             noise_add = self.noise.sample()
 #             writer.add_scalar('action_noise', noise_add, self.steps)
 #             writer.add_scalar('action_before_noise', action, self.steps)
-            action += noise_add
-        writer.add_scalar('action_preclip_1', action[0], self.steps)
-        writer.add_scalar('action_preclip_2', action[1], self.steps)
-        writer.add_scalar('action_preclip_3', action[2], self.steps)
-        writer.add_scalar('action_preclip_4', action[3], self.steps)
+            action += self.epsilon * noise_add
+        self.writer.add_scalar('action_preclip_1', action[0][0], self.steps)
+        self.writer.add_scalar('action_preclip_2', action[0][1], self.steps)
+        self.writer.add_scalar('action_preclip_3', action[0][2], self.steps)
+        self.writer.add_scalar('action_preclip_4', action[0][3], self.steps)
         return np.clip(action, -1, 1)
 
     def reset(self):
@@ -116,7 +125,7 @@ class Agent():
         # Compute critic loss
         Q_expected = self.critic_local(states, actions)
         critic_loss = F.mse_loss(Q_expected, Q_targets)
-        writer.add_scalar('critic_loss', critic_loss, self.steps)
+        self.writer.add_scalar('critic_loss', critic_loss, self.steps)
         # Minimize the loss
         self.critic_optimizer.zero_grad()
         critic_loss.backward()
@@ -131,12 +140,15 @@ class Agent():
         actor_loss.backward()
         self.actor_optimizer.step()
         self.actor_running_loss += actor_loss.item()
-        writer.add_scalar('actor_running_loss', self.actor_running_loss, self.steps)
-        writer.add_scalar('actor_loss', actor_loss.item(), self.steps)
+        self.writer.add_scalar('actor_running_loss', self.actor_running_loss, self.steps)
+        self.writer.add_scalar('actor_loss', actor_loss.item(), self.steps)
         
         # ----------------------- update target networks ----------------------- #
         self.soft_update(self.critic_local, self.critic_target, TAU)
-        self.soft_update(self.actor_local, self.actor_target, TAU)                     
+        self.soft_update(self.actor_local, self.actor_target, TAU)
+        # ----------------------- update noise ----------------------- #
+        self.epsilon -= EPSILON_DECAY
+        self.noise.reset()
 
     def soft_update(self, local_model, target_model, tau):
         """Soft update model parameters.
