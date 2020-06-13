@@ -129,4 +129,5 @@ dmypy.json
 *.zip
 *.gl/
 *.sf/
+.vscode
 .vscode/
