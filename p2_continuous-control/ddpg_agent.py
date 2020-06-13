@@ -15,7 +15,7 @@ GAMMA = 0.98            # discount factor
 
 TAU = 1e-3              # for soft update of target parameters
 LR_ACTOR  = 2e-3         # learning rate of the actor 
-LR_CRITIC = 1e-3        # learning rate of the critic
+LR_CRITIC = 1e-4        # learning rate of the critic
 WEIGHT_DECAY = 0        # L2 weight decay
 
 EPSILON_DECAY = 2e-6    # decay for epsilon above
@@ -90,13 +90,14 @@ class Agent():
         self.actor_local.train()
         if add_noise:
             noise_add = self.noise.sample()
-#             writer.add_scalar('action_noise', noise_add, self.steps)
-#             writer.add_scalar('action_before_noise', action, self.steps)
+            self.writer.add_scalar('action_noise', noise_add.mean(), self.steps)
+            self.writer.add_scalar('action_before_noise', action.mean(), self.steps)
+            self.writer.add_scalar('epsilon', self.epsilon, self.steps)
             action += self.epsilon * noise_add
-        self.writer.add_scalar('action_preclip_1', action[0][0], self.steps)
-        self.writer.add_scalar('action_preclip_2', action[0][1], self.steps)
-        self.writer.add_scalar('action_preclip_3', action[0][2], self.steps)
-        self.writer.add_scalar('action_preclip_4', action[0][3], self.steps)
+#         self.writer.add_scalar('action_preclip_1', action[0][0], self.steps)
+#         self.writer.add_scalar('action_preclip_2', action[0][1], self.steps)
+#         self.writer.add_scalar('action_preclip_3', action[0][2], self.steps)
+#         self.writer.add_scalar('action_preclip_4', action[0][3], self.steps)
         return np.clip(action, -1, 1)
 
     def reset(self):
