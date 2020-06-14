@@ -47,21 +47,30 @@ The environment is considered solved, when the average (over 100 episodes) of th
     - **_Version 1: One (1) Agent_**
         - Windows (64-bit): [click here](https://s3-us-west-1.amazonaws.com/udacity-drlnd/P2/Reacher/one_agent/Reacher_Windows_x86_64.zip)
 
+        - Linux: [click here](https://s3-us-west-1.amazonaws.com/udacity-drlnd/P2/Reacher/one_agent/Reacher_Linux.zip)
+
+
     - **_Version 2: Twenty (20) Agents_**
         - Windows (64-bit): [click here](https://s3-us-west-1.amazonaws.com/udacity-drlnd/P2/Reacher/Reacher_Windows_x86_64.zip)
+        
+        - Linux: [click here](https://s3-us-west-1.amazonaws.com/udacity-drlnd/P2/Reacher/Reacher_Linux.zip)
     
-    (_For AWS_) If you'd like to train the agent on AWS (and have not [enabled a virtual screen](https://github.com/Unity-Technologies/ml-agents/blob/master/docs/Training-on-Amazon-Web-Service.md)), then please use [this link](https://s3-us-west-1.amazonaws.com/udacity-drlnd/P2/Reacher/one_agent/Reacher_Linux_NoVis.zip) (version 1) or [this link](https://s3-us-west-1.amazonaws.com/udacity-drlnd/P2/Reacher/Reacher_Linux_NoVis.zip) (version 2) to obtain the "headless" version of the environment.  You will **not** be able to watch the agent without enabling a virtual screen, but you will be able to train the agent.  (_To watch the agent, you should follow the instructions to [enable a virtual screen](https://github.com/Unity-Technologies/ml-agents/blob/master/docs/Training-on-Amazon-Web-Service.md), and then download the environment for the **Linux** operating system above._)
 
-2. Place the file in the DRLND GitHub repository, in the `p2_continuous-control/` folder, and unzip (or decompress) the file. 
+2. Place the file in the `p2_continuous-control/` folder, and unzip (or decompress) the file. 
 
 3. For this project the dependency librarys are as follows:
-   - torch 1.5
+   - python 3.6 
+   - torch 1.5 (with CUDA 10.2)
    - numpy 1.18
    - unityagent 0.4
    - tensorboard 1.14
+   - matplotlib 3.2
 
 
 ### Instructions
 
-Follow the instructions in `Continuous_Control.ipynb` to get started with training your own agent!  
+Follow the instructions in [`Continuous_Control_ddpg_gpu.ipynb`](https://github.com/readerwei/Reinforcement_Learning_Degree/blob/master/p2_continuous-control/Continuous_Control_ddpg_gpu.ipynb) to get started with training your own agent!  
 
+### Report
+
+The detailed algorithms and training results are documented in the [`Report.ipynb`](https://github.com/readerwei/Reinforcement_Learning_Degree/blob/master/p2_continuous-control/Report.ipynb).
