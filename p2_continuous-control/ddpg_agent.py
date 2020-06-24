@@ -148,7 +148,7 @@ class Agent():
         self.soft_update(self.critic_local, self.critic_target, TAU)
         self.soft_update(self.actor_local, self.actor_target, TAU)
         # ----------------------- update noise ----------------------- #
-        self.epsilon -= EPSILON_DECAY
+        self.epsilon *= 1-EPSILON_DECAY
         self.noise.reset()
 
     def soft_update(self, local_model, target_model, tau):
