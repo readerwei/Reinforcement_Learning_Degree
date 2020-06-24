@@ -23,6 +23,7 @@ class Policy(nn.Module):
         self.std = nn.Parameter(torch.ones(action_size))
         
     def forward(self, x, action):
+         """Build a policy network."""
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         mean = F.tanh(self.fc3(x))
