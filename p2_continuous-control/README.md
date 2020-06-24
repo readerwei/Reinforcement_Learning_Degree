@@ -69,6 +69,7 @@ The environment is considered solved, when the average (over 100 episodes) of th
    - tensorboard 1.14
    - matplotlib 3.2
 
+    For detailed requirments, please check out the [`requirements.txt`](https://github.com/readerwei/Reinforcement_Learning_Degree/blob/master/requirements.txt).
 
 ### Instructions
 
