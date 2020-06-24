@@ -127,7 +127,11 @@ dmypy.json
 
 # zipfile
 *.zip
+
 *.gl/
 *.sf/
 .vscode
 .vscode/
+p2_continuous-control/Reacher_Linux_v2/
+p2_continuous-control/runs/
+p2_continuous-control/unity-environment.log
