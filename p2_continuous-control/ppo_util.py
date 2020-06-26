@@ -4,7 +4,7 @@ import numpy as np
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 def clipped_surrogate(policy, old_log_probs, states, actions, rewards_normalized, epsilon=0.2, beta=0.01):
-    
+    '''Move forward one step and calculate the clipped loss'''
     # convert everything into pytorch tensors and move to gpu if available
     actions       = torch.stack(actions).float().to(device=device)
     states        = torch.from_numpy(np.stack(states)).float().to(device=device)
@@ -36,6 +36,12 @@ def clipped_surrogate(policy, old_log_probs, states, actions, rewards_normalized
 
 
 def collect_trajectories(env, brain_name, policy, state, action, action_size, num_agents=1, tmax=50): 
+    ''' Roll out Trajectories
+        Params
+        ======
+        action_size (int): Dimension of each action
+        tmax (int): Maximum Steps rolled out
+    '''
     #initialize returning lists and start the game!
     state_list=[]
     reward_list=[]
@@ -79,6 +85,7 @@ def collect_trajectories(env, brain_name, policy, state, action, action_size, nu
 
 
 def normalize_reward(rewards, discount):
+    ''' Normalize Discounted Rewards '''
     discount = discount**np.arange(len(rewards))
     rewards = np.asarray(rewards)*discount[:,np.newaxis]
       # convert rewards to future rewards
