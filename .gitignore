@@ -136,9 +136,7 @@ p2_continuous-control/Reacher_Linux_v2/
 p2_continuous-control/runs/
 p2_continuous-control/unity-environment.log
 p3_collab-compet/Tennis_Windows_x86_64/
-<<<<<<< HEAD
+
 p3_collab-compet/Tennis_Linux/
 p3_collab-compet/Tennis_Linux_NoVis/
-=======
 p3_collab-compet/log/
->>>>>>> 915dff3bc8549d8594de1edb1b206a5d399059d8
