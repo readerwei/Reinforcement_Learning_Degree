@@ -14,10 +14,9 @@ class MADDPG:
     def __init__(self, discount_factor=0.95, tau=0.02):
         super(MADDPG, self).__init__()
 
-        # critic input = obs_full + actions = 14+2+2+2=20
-        self.maddpg_agent = [DDPGAgent(14, 16, 8, 2, 20, 32, 16), 
-                             DDPGAgent(14, 16, 8, 2, 20, 32, 16), 
-                             DDPGAgent(14, 16, 8, 2, 20, 32, 16)]
+        # critic input = obs_full + actions = 24+24+2+2=52
+        self.maddpg_agent = [DDPGAgent(24, 16, 8, 2, 52, 32, 16), 
+                             DDPGAgent(24, 16, 8, 2, 52, 32, 16)]
         
         self.discount_factor = discount_factor
         self.tau = tau
