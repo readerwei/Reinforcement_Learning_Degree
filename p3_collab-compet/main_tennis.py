@@ -119,7 +119,7 @@ for episode in range(0, number_of_episodes):
         agent0_reward.append(reward_this_episode[i,0])
         agent1_reward.append(reward_this_episode[i,1])
 
-    if episode % 100 == 0 or episode == number_of_episodes-1:
+    if episode % 10 == 0 or episode == number_of_episodes-1:
         avg_rewards = [np.mean(agent0_reward), np.mean(agent1_reward)]
         agent0_reward = []
         agent1_reward = []
