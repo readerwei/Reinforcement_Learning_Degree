@@ -48,7 +48,7 @@ class MADDPG:
         # need to transpose each element of the samples
         # to flip obs[parallel_agent][agent_number] to
         # obs[agent_number][parallel_agent]
-        obs, obs_full, action, reward, next_obs, next_obs_full, done = map(transpose_to_tensor, samples)
+        obs, obs_full, action, reward, next_obs, next_obs_full, done = map(transpose_to_tensor2, samples)
 
         obs_full = torch.stack(obs_full)
         next_obs_full = torch.stack(next_obs_full)
