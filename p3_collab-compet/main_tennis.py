@@ -37,9 +37,9 @@ parallel_envs = 1
 # number of training episodes.
 # change this to higher number to experiment. say 30000.
 number_of_episodes = 300
-batchsize = 10
+batchsize = 1000
 # how many episodes to save policy and gif
-save_interval = 1000
+save_interval = 100
 t = 0
 
 # amplitude of OU noise, this slowly decreases to 0
@@ -54,7 +54,7 @@ os.makedirs(model_dir, exist_ok=True)
 # torch.set_num_threads(parallel_envs)
 
 # keep 5000 episodes worth of replay
-buffer = ReplayBuffer(int(1e2))
+buffer = ReplayBuffer(int(1e5))
 
 # initialize policy and critic
 maddpg = MADDPG()
@@ -62,14 +62,18 @@ logger = SummaryWriter(log_dir=log_path)
 agent0_reward = []
 agent1_reward = []
 
-reward_this_episode = np.zeros((parallel_envs, num_agents))
-env_info = env.reset(train_mode=True)[brain_name] 
-all_obs = env_info.vector_observations
 
-obs = [list(all_obs)]
-obs_full= [np.concatenate(all_obs)]
 
 for episode in range(0, number_of_episodes):
+
+    reward_this_episode = np.zeros((parallel_envs, num_agents))
+    env_info = env.reset(train_mode=True)[brain_name] 
+    all_obs = env_info.vector_observations
+
+    obs = [list(all_obs)]
+    obs_full= [np.concatenate(all_obs)]
+
+    save_info = ((episode) % save_interval < parallel_envs or episode==number_of_episodes-parallel_envs)
 
     while True:
         # explore = only explore for a certain number of episodes
@@ -123,7 +127,7 @@ for episode in range(0, number_of_episodes):
             logger.add_scalar('agent%i/mean_episode_rewards' % a_i, avg_rew, episode)
 
     save_dict_list =[]
-    if episode % 100 == 0:
+    if save_info:
         for i in range(num_agents):
             save_dict = {'actor_params' : maddpg.maddpg_agent[i].actor.state_dict(),
                          'actor_optim_params': maddpg.maddpg_agent[i].actor_optimizer.state_dict(),
