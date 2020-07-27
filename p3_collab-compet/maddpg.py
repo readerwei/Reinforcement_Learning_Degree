@@ -8,15 +8,18 @@ from utilities import soft_update, transpose_to_tensor, transpose_list
 #device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 device = 'cpu'
 
-
+Actor_LAYER_1 = 128
+Actor_LAYER_2 = 64
+Critic_LAYER_1 = 64
+Critic_LAYER_2 = 32
 
 class MADDPG:
     def __init__(self, discount_factor=0.95, tau=0.02):
         super(MADDPG, self).__init__()
 
         # critic input = obs_full + actions = 24+24+2+2=52
-        self.maddpg_agent = [DDPGAgent(24, 64, 16, 2, 52, 64, 16), 
-                             DDPGAgent(24, 64, 16, 2, 52, 64, 16)]
+        self.maddpg_agent = [DDPGAgent(24, Actor_LAYER_1, Actor_LAYER_2, 2, 52, Critic_LAYER_1, Critic_LAYER_2), 
+                             DDPGAgent(24, Actor_LAYER_1, Actor_LAYER_2, 2, 52, Critic_LAYER_1, Critic_LAYER_2)]
         
         self.discount_factor = discount_factor
         self.tau = tau

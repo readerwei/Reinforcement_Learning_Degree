@@ -33,11 +33,11 @@ state_size = states.shape[1]
 
 seeding()
 # number of parallel agents
-parallel_envs = 1
+parallel_envs = 4
 # number of training episodes.
 # change this to higher number to experiment. say 30000.
 number_of_episodes = 300
-batchsize = 1000
+batchsize = 10000
 # how many episodes to save policy and gif
 save_interval = 100
 t = 0
@@ -57,7 +57,7 @@ os.makedirs(model_dir, exist_ok=True)
 buffer = ReplayBuffer(int(1e5))
 
 # initialize policy and critic
-maddpg = MADDPG()
+maddpg = MADDPG(discount_factor=0.99, tau=1e-3)
 logger = SummaryWriter(log_dir=log_path)
 agent0_reward = []
 agent1_reward = []
