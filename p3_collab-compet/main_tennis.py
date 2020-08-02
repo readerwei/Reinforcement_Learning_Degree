@@ -36,14 +36,14 @@ seeding()
 parallel_envs = 4
 # number of training episodes.
 # change this to higher number to experiment. say 30000.
-number_of_episodes = 300
-batchsize = 10000
+number_of_episodes = 1000
+batchsize = 1000
 # how many episodes to save policy and gif
 save_interval = 100
 t = 0
 
 # amplitude of OU noise, this slowly decreases to 0
-noise = 2
+noise = 0.05
 noise_reduction = 0.9999
 
 # how many episodes before update
@@ -51,7 +51,7 @@ episode_per_update = 2 * parallel_envs
 log_path = os.getcwd()+"/log"
 model_dir= os.getcwd()+"/model_dir"
 os.makedirs(model_dir, exist_ok=True)
-# torch.set_num_threads(parallel_envs)
+torch.set_num_threads(parallel_envs)
 
 # keep 5000 episodes worth of replay
 buffer = ReplayBuffer(int(1e5))
