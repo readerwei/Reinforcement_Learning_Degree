@@ -10,10 +10,10 @@ from utilities import soft_update, transpose_list, transpose_to_tensor
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # device = 'cpu'
 
-Actor_LAYER_1 = 128
-Actor_LAYER_2 = 64
-Critic_LAYER_1 = 64
-Critic_LAYER_2 = 32
+Actor_LAYER_1 = 256 
+Actor_LAYER_2 = 128
+Critic_LAYER_1 = 256
+Critic_LAYER_2 = 128
 
 
 class MADDPG:
