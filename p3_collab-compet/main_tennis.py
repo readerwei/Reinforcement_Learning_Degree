@@ -1,11 +1,12 @@
 from unityagents import UnityEnvironment
 import numpy as np
+import torch
+import os
+from datetime import datetime
 
 from buffer import ReplayBuffer
 from maddpg import MADDPG
-import torch
 from tensorboardX import SummaryWriter
-import os
 from utilities import transpose_list, transpose_to_tensor
 
 def seeding(seed=123):
@@ -48,7 +49,7 @@ noise_reduction = 0.9999
 
 # how many episodes before update
 episode_per_update = 2 * parallel_envs
-log_path = os.getcwd()+"/log"
+log_path = os.getcwd()+"/log/" + str(datetime.now().strftime('%Y_%m_%d_%H_%M'))
 model_dir= os.getcwd()+"/model_dir"
 os.makedirs(model_dir, exist_ok=True)
 torch.set_num_threads(parallel_envs)
