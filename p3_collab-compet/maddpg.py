@@ -71,8 +71,7 @@ class MADDPG:
         target_actions = self.target_act(next_obs)
         target_actions = torch.cat(target_actions, dim=1)
 
-        target_critic_input = torch.cat(
-            (next_obs_full.t(), target_actions), dim=1).to(device)
+        target_critic_input = torch.cat((next_obs_full.t(), target_actions), dim=1)
 
         with torch.no_grad():
             q_next = agent.target_critic(target_critic_input)
@@ -80,7 +79,7 @@ class MADDPG:
         y = reward[agent_number].view(-1, 1) + self.discount_factor * \
             q_next * (1 - done[agent_number].view(-1, 1))
         action = torch.cat(action, dim=1)
-        critic_input = torch.cat((obs_full.t(), action), dim=1).to(device)
+        critic_input = torch.cat((obs_full.t(), action), dim=1)
         q = agent.critic(critic_input)
 
         huber_loss = torch.nn.SmoothL1Loss()

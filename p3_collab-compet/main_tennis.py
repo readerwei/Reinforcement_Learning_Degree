@@ -13,8 +13,8 @@ def seeding(seed=123):
     torch.manual_seed(seed)
     
 
-env = UnityEnvironment(file_name="./Tennis_Windows_x86_64/Tennis.exe")
-# env = UnityEnvironment(file_name="./Tennis_Linux/Tennis.x86_64")
+# env = UnityEnvironment(file_name="./Tennis_Windows_x86_64/Tennis.exe")
+env = UnityEnvironment(file_name="./Tennis_Linux/Tennis.x86_64")
 
 # get the default brain
 brain_name = env.brain_names[0]
@@ -36,7 +36,7 @@ seeding()
 parallel_envs = 4
 # number of training episodes.
 # change this to higher number to experiment. say 30000.
-number_of_episodes = 3000
+number_of_episodes = 300
 batchsize = 1000
 # how many episodes to save policy and gif
 save_interval = 100
@@ -81,7 +81,7 @@ for episode in range(0, number_of_episodes):
         actions = maddpg.act(transpose_to_tensor(obs), noise=noise)
         noise *= noise_reduction
 
-        actions_array = torch.stack(actions).detach().numpy()
+        actions_array = torch.stack(actions).detach().cpu().numpy()
 
         # transpose the list of list
         # flip the first two indices

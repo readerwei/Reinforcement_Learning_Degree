@@ -36,10 +36,12 @@ class DDPGAgent:
 
     def act(self, obs, noise=0.0):
         obs = obs.to(device)
-        action = self.actor(obs) + noise*self.noise.noise()
+        ounoise = self.noise.noise().to(device)
+        action = self.actor(obs) + noise*ounoise
         return action
 
     def target_act(self, obs, noise=0.0):
         obs = obs.to(device)
-        action = self.target_actor(obs) + noise*self.noise.noise()
+        ounoise = self.noise.noise().to(device)
+        action = self.target_actor(obs) + noise*ounoise
         return action

@@ -5,11 +5,13 @@ import torch.distributed as dist
 from torch.autograd import Variable
 import numpy as np
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 def transpose_list(mylist):
     return list(map(list, zip(*mylist)))
 
 def transpose_to_tensor(input_list):
-    make_tensor = lambda x: torch.tensor(x, dtype=torch.float)
+    make_tensor = lambda x: torch.tensor(x, dtype=torch.float).to(device)
     return list(map(make_tensor, zip(*input_list)))
 
 
