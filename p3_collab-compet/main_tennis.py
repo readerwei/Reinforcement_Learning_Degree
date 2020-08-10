@@ -9,7 +9,7 @@ from maddpg import MADDPG
 from tensorboardX import SummaryWriter
 from utilities import transpose_list, transpose_to_tensor
 
-def seeding(seed=123):
+def seeding(seed=2325):
     np.random.seed(seed)
     torch.manual_seed(seed)
     
@@ -37,8 +37,8 @@ seeding()
 parallel_envs = 4
 # number of training episodes.
 # change this to higher number to experiment. say 30000.
-number_of_episodes = 300
-batchsize = 1000
+number_of_episodes = 3000
+batchsize = 1024
 # how many episodes to save policy and gif
 save_interval = 100
 t = 0
