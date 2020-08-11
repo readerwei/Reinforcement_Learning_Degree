@@ -130,6 +130,7 @@ dmypy.json
 
 *.gl/
 *.sf/
+.vs
 .vscode
 .vscode/
 p2_continuous-control/Reacher_Linux_v2/
