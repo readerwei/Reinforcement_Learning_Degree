@@ -38,14 +38,14 @@ parallel_envs = 4
 # number of training episodes.
 # change this to higher number to experiment. say 30000.
 number_of_episodes = 3000
-batchsize = 1024
+batchsize = 512
 # how many episodes to save policy and gif
 save_interval = 100
 t = 0
 
 # amplitude of OU noise, this slowly decreases to 0
-noise = 0.5
-noise_reduction = 0.9999
+noise = 1.0
+noise_reduction = 0.9998
 
 # how many episodes before update
 episode_per_update = 2 * parallel_envs
@@ -55,10 +55,10 @@ os.makedirs(model_dir, exist_ok=True)
 torch.set_num_threads(parallel_envs)
 
 # keep 5000 episodes worth of replay
-buffer = ReplayBuffer(int(1e5))
+buffer = ReplayBuffer(int(1e6))
 
 # initialize policy and critic
-maddpg = MADDPG(discount_factor=0.995, tau=1e-3)
+maddpg = MADDPG(discount_factor=0.995, tau=1e-2)
 logger = SummaryWriter(log_dir=log_path)
 agent0_reward = []
 agent1_reward = []
@@ -81,6 +81,7 @@ for episode in range(0, number_of_episodes):
         # action input needs to be transposed
         actions = maddpg.act(transpose_to_tensor(obs), noise=noise)
         noise *= noise_reduction
+        logger.add_scalars('noise/scale', {'noise': noise}, obs_iter)
 
         actions_array = torch.stack(actions).detach().cpu().numpy()
 
@@ -123,7 +124,7 @@ for episode in range(0, number_of_episodes):
         agent0_reward.append(reward_this_episode[i,0])
         agent1_reward.append(reward_this_episode[i,1])
 
-    if episode % 10 == 0 or episode == number_of_episodes-1:
+    if episode % 1 == 0 or episode == number_of_episodes-1:
         avg_rewards = [np.mean(agent0_reward), np.mean(agent1_reward)]
         max_rewards = [np.max(agent0_reward), np.max(agent1_reward)]
         agent0_reward = []
