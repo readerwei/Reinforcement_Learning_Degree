@@ -15,14 +15,16 @@ Actor_LAYER_2 = 64
 Critic_LAYER_1 = 128
 Critic_LAYER_2 = 64
 
+lr_actor=1.0e-4 
+lr_critic=1.0e-3
 
 class MADDPG:
     def __init__(self, discount_factor=0.95, tau=0.02):
         super(MADDPG, self).__init__()
 
         # critic input = obs_full + actions = 24+24+2+2=52
-        self.maddpg_agent = [DDPGAgent(24, Actor_LAYER_1, Actor_LAYER_2, 2, 52, Critic_LAYER_1, Critic_LAYER_2),
-                             DDPGAgent(24, Actor_LAYER_1, Actor_LAYER_2, 2, 52, Critic_LAYER_1, Critic_LAYER_2)]
+        self.maddpg_agent = [DDPGAgent(24, Actor_LAYER_1, Actor_LAYER_2, 2, 52, Critic_LAYER_1, Critic_LAYER_2, lr_actor, lr_critic),
+                             DDPGAgent(24, Actor_LAYER_1, Actor_LAYER_2, 2, 52, Critic_LAYER_1, Critic_LAYER_2, lr_actor, lr_critic)]
 
         self.discount_factor = discount_factor
         self.tau = tau
@@ -110,10 +112,8 @@ class MADDPG:
 
         al = actor_loss.cpu().detach().item()
         cl = critic_loss.cpu().detach().item()
-        logger.add_scalars('agent%i/losses' % agent_number,
-                           {'critic loss': cl,
-                            'actor_loss': al},
-                           self.iter)
+        logger.add_scalars('agent%i/losses' % agent_number,  {'critic loss': cl, 'actor_loss': al},  self.iter)
+        
 
     def update_targets(self):
         """soft update targets"""

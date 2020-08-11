@@ -14,8 +14,8 @@ def seeding(seed=2325):
     torch.manual_seed(seed)
     
 
-# env = UnityEnvironment(file_name="./Tennis_Windows_x86_64/Tennis.exe")
-env = UnityEnvironment(file_name="./Tennis_Linux/Tennis.x86_64")
+env = UnityEnvironment(file_name="./Tennis_Windows_x86_64/Tennis.exe")
+# env = UnityEnvironment(file_name="./Tennis_Linux/Tennis.x86_64")
 
 # get the default brain
 brain_name = env.brain_names[0]
@@ -44,7 +44,7 @@ save_interval = 100
 t = 0
 
 # amplitude of OU noise, this slowly decreases to 0
-noise = 0.05
+noise = 0.5
 noise_reduction = 0.9999
 
 # how many episodes before update
@@ -63,7 +63,7 @@ logger = SummaryWriter(log_dir=log_path)
 agent0_reward = []
 agent1_reward = []
 
-
+obs_iter = 0 
 
 for episode in range(0, number_of_episodes):
 
@@ -97,7 +97,6 @@ for episode in range(0, number_of_episodes):
         rewards  = [env_info.rewards]                         # get reward (for each agent)
         dones    = [env_info.local_done]                        # see if episode finished
 
-
         # add data to buffer
         transition = (obs, obs_full, actions_for_env, rewards, next_obs, next_obs_full, dones)
 
@@ -106,6 +105,10 @@ for episode in range(0, number_of_episodes):
         reward_this_episode += rewards
 
         obs, obs_full = next_obs, next_obs_full
+
+        obs_iter += 1
+        logger.add_scalars('agent0/actions',  {'action[0]': actions_for_env[0][0][0], 
+                                               'action[1]': actions_for_env[0][0][1]},  obs_iter) 
         if np.any(dones):
             break
 
@@ -122,10 +125,13 @@ for episode in range(0, number_of_episodes):
 
     if episode % 10 == 0 or episode == number_of_episodes-1:
         avg_rewards = [np.mean(agent0_reward), np.mean(agent1_reward)]
+        max_rewards = [np.max(agent0_reward), np.max(agent1_reward)]
         agent0_reward = []
         agent1_reward = []
         for a_i, avg_rew in enumerate(avg_rewards):
             logger.add_scalar('agent%i/mean_episode_rewards' % a_i, avg_rew, episode)
+        for a_i, max_rew in enumerate(max_rewards):
+            logger.add_scalar('agent%i/max_episode_rewards' % a_i, max_rew, episode)
 
     save_dict_list =[]
     if save_info:
