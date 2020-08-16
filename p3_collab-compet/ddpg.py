@@ -9,8 +9,8 @@ import numpy as np
 
 # add OU noise for exploration
 from OUNoise import OUNoise
-NOISE_SIGMA = 0.75      # sigma for Ornstein-Uhlenbeck noise
-NOISE_THETA = 0.10
+NOISE_SIGMA = 0.2      # sigma for Ornstein-Uhlenbeck noise
+NOISE_THETA = 0.15
 WEIGHT_DECAY = 0 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

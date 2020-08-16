@@ -45,7 +45,7 @@ t = 0
 
 # amplitude of OU noise, this slowly decreases to 0
 noise = 1.0
-noise_reduction = 0.9998
+noise_reduction = 0.9999998
 
 # how many episodes before update
 episode_per_update = 2 * parallel_envs
@@ -58,7 +58,7 @@ torch.set_num_threads(parallel_envs)
 buffer = ReplayBuffer(int(1e6))
 
 # initialize policy and critic
-maddpg = MADDPG(discount_factor=0.995, tau=1e-2)
+maddpg = MADDPG(discount_factor=0.995, tau=1e-3)
 logger = SummaryWriter(log_dir=log_path)
 agent0_reward = []
 agent1_reward = []

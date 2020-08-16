@@ -33,7 +33,7 @@ class Network(nn.Module):
             # return a vector of the force
             h1 = self.nonlin(self.fc1(x))
             h2 = self.nonlin(self.fc2(h1))
-            h3 = (self.fc3(h2))
+            h3 = self.fc3(h2)
             action = torch.tanh(h3)
             
             # we bound the norm of the vector to be between -1 and 1
@@ -43,5 +43,5 @@ class Network(nn.Module):
             # critic network simply outputs a number
             h1 = self.nonlin(self.fc1(x))
             h2 = self.nonlin(self.fc2(h1))
-            h3 = (self.fc3(h2))
+            h3 = self.fc3(h2)
             return h3
