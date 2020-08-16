@@ -37,8 +37,8 @@ seeding()
 parallel_envs = 4
 # number of training episodes.
 # change this to higher number to experiment. say 30000.
-number_of_episodes = 3000
-batchsize = 512
+number_of_episodes = 10000
+batchsize = 256
 # how many episodes to save policy and gif
 save_interval = 100
 t = 0
@@ -55,7 +55,7 @@ os.makedirs(model_dir, exist_ok=True)
 torch.set_num_threads(parallel_envs)
 
 # keep 5000 episodes worth of replay
-buffer = ReplayBuffer(int(1e6))
+buffer = ReplayBuffer(int(1e5))
 
 # initialize policy and critic
 maddpg = MADDPG(discount_factor=0.995, tau=1e-3)
