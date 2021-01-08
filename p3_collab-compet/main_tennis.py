@@ -1,13 +1,16 @@
-from unityagents import UnityEnvironment
-import numpy as np
-import torch
 import os
 from datetime import datetime
+import numpy as np
+
+import torch
+# from torch.utils.tensorboard import SummaryWriter
+from tensorboardX import SummaryWriter
+from unityagents import UnityEnvironment
 
 from buffer import ReplayBuffer
 from maddpg import MADDPG
-from tensorboardX import SummaryWriter
 from utilities import transpose_list, transpose_to_tensor
+
 
 def seeding(seed=2325):
     np.random.seed(seed)

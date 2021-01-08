@@ -6,6 +6,8 @@ import torch
 
 from ddpg import DDPGAgent
 from utilities import soft_update, transpose_list, transpose_to_tensor
+import torch.nn.functional as F
+
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # device = 'cpu'
@@ -77,6 +79,7 @@ class MADDPG:
 
         with torch.no_grad():
             q_next = agent.target_critic(target_critic_input)
+        # q_next = agent.target_critic(target_critic_input)
 
         y = reward[agent_number].view(-1, 1) + self.discount_factor * \
             q_next * (1 - done[agent_number].view(-1, 1))
@@ -84,8 +87,9 @@ class MADDPG:
         critic_input = torch.cat((obs_full.t(), action), dim=1)
         q = agent.critic(critic_input)
 
-        huber_loss = torch.nn.SmoothL1Loss()
-        critic_loss = huber_loss(q, y.detach())
+        # huber_loss = torch.nn.SmoothL1Loss()
+        # critic_loss = huber_loss(q, y.detach())
+        critic_loss = F.mse_loss(q, y.detach())
         critic_loss.backward()
         #torch.nn.utils.clip_grad_norm_(agent.critic.parameters(), 0.5)
         agent.critic_optimizer.step()
@@ -95,14 +99,14 @@ class MADDPG:
         # make input to agent
         # detach the other agents to save computation
         # saves some time for computing derivative
-        q_input = [self.maddpg_agent[i].actor(ob) if i == agent_number
+        a_input = [self.maddpg_agent[i].actor(ob) if i == agent_number
                    else self.maddpg_agent[i].actor(ob).detach()
                    for i, ob in enumerate(obs)]
 
-        q_input = torch.cat(q_input, dim=1)
+        a_input = torch.cat(a_input, dim=1)
         # combine all the actions and observations for input to critic
         # many of the obs are redundant, and obs[1] contains all useful information already
-        q_input2 = torch.cat((obs_full.t(), q_input), dim=1)
+        q_input2 = torch.cat((obs_full.t(), a_input), dim=1)
 
         # get the policy gradient
         actor_loss = -agent.critic(q_input2).mean()
