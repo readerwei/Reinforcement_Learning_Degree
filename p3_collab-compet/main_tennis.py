@@ -1,5 +1,7 @@
 import os
+import shutil
 from datetime import datetime
+from collections import deque
 import numpy as np
 
 import torch
@@ -12,7 +14,7 @@ from maddpg import MADDPG
 from utilities import transpose_list, transpose_to_tensor
 
 
-def seeding(seed=2325):
+def seeding(seed=12):
     np.random.seed(seed)
     torch.manual_seed(seed)
     
@@ -37,39 +39,47 @@ state_size = states.shape[1]
 
 seeding()
 # number of parallel agents
-parallel_envs = 4
+parallel_envs = 1
 # number of training episodes.
 # change this to higher number to experiment. say 30000.
-number_of_episodes = 10000
+number_of_episodes = 6000
 batchsize = 256
 # how many episodes to save policy and gif
 save_interval = 100
 t = 0
 
 # amplitude of OU noise, this slowly decreases to 0
-noise = 1.0
-noise_reduction = 0.9999998
+noise = 3
+noise_reduction = 0.99998
 
 # how many episodes before update
 episode_per_update = 2 * parallel_envs
 log_path = os.getcwd()+"/log/" + str(datetime.now().strftime('%Y_%m_%d_%H_%M'))
+log_path = os.getcwd()+"/log/" + "Test"
+shutil.rmtree(log_path)
 model_dir= os.getcwd()+"/model_dir"
 os.makedirs(model_dir, exist_ok=True)
 torch.set_num_threads(parallel_envs)
 
 # keep 5000 episodes worth of replay
-buffer = ReplayBuffer(int(1e5))
+buffer = ReplayBuffer(int(1e6))
 
 # initialize policy and critic
-maddpg = MADDPG(discount_factor=0.995, tau=1e-3)
+maddpg = MADDPG(discount_factor=0.95, tau=1e-3)
 logger = SummaryWriter(log_dir=log_path)
+
+print_every=100
+scores_deque = deque(maxlen=100)
+
 agent0_reward = []
 agent1_reward = []
 
 obs_iter = 0 
 
-for episode in range(0, number_of_episodes):
 
+
+for episode in range(0, number_of_episodes):
+    
     reward_this_episode = np.zeros((parallel_envs, num_agents))
     env_info = env.reset(train_mode=True)[brain_name] 
     all_obs = env_info.vector_observations
@@ -77,7 +87,7 @@ for episode in range(0, number_of_episodes):
     obs = [list(all_obs)]
     obs_full= [np.concatenate(all_obs)]
 
-    save_info = ((episode) % save_interval < parallel_envs or episode==number_of_episodes-parallel_envs)
+    save_info = ((episode) % save_interval == 0 or episode==number_of_episodes-parallel_envs)
 
     while True:
         # explore = only explore for a certain number of episodes
@@ -136,6 +146,11 @@ for episode in range(0, number_of_episodes):
             logger.add_scalar('agent%i/mean_episode_rewards' % a_i, avg_rew, episode)
         for a_i, max_rew in enumerate(max_rewards):
             logger.add_scalar('agent%i/max_episode_rewards' % a_i, max_rew, episode)
+
+    scores_deque.append(reward_this_episode[0].max())
+    print("episodes {}: Max reward is {}".format(episode, reward_this_episode[0].max()))
+    score_average = np.mean(scores_deque)
+    logger.add_scalar('result/results', score_average, episode)
 
     save_dict_list =[]
     if save_info:

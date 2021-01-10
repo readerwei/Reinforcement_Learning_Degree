@@ -10,15 +10,16 @@ import torch.nn.functional as F
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print("\n Device for computation: {}".format(device))
 # device = 'cpu'
 
 Actor_LAYER_1 = 256 
-Actor_LAYER_2 = 128
-Critic_LAYER_1 = 256
+Actor_LAYER_2 = 64
+Critic_LAYER_1 = 512
 Critic_LAYER_2 = 128
 
-lr_actor  = 1.0e-4 
-lr_critic = 5.0e-3
+lr_actor  = 5.0e-3 
+lr_critic = 1.0e-4
 
 class MADDPG:
     def __init__(self, discount_factor=0.95, tau=0.02):
@@ -71,7 +72,7 @@ class MADDPG:
         agent.critic_optimizer.zero_grad()
 
         # critic loss = batch mean of (y- Q(s,a) from target network)^2
-        # y = reward of this timestep + discount * Q(st+1,at+1) from target network
+        # y = reward of this timestep + discount * Q(st+1,at+1) from target network, note here noise is set to 0 implicitly. 
         target_actions = self.target_act(next_obs)
         target_actions = torch.cat(target_actions, dim=1)
 
