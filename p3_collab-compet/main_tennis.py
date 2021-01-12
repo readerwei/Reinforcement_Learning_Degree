@@ -49,7 +49,7 @@ save_interval = 100
 t = 0
 
 # amplitude of OU noise, this slowly decreases to 0
-noise = 3
+noise = 1
 noise_reduction = 0.99998
 
 # how many episodes before update
@@ -65,7 +65,7 @@ torch.set_num_threads(parallel_envs)
 buffer = ReplayBuffer(int(1e6))
 
 # initialize policy and critic
-maddpg = MADDPG(discount_factor=0.95, tau=1e-3)
+maddpg = MADDPG(discount_factor=0.99, tau=1e-4)
 logger = SummaryWriter(log_dir=log_path)
 
 print_every=100

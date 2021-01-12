@@ -18,8 +18,8 @@ Actor_LAYER_2 = 64
 Critic_LAYER_1 = 512
 Critic_LAYER_2 = 128
 
-lr_actor  = 5.0e-3 
-lr_critic = 1.0e-4
+lr_actor  = 5.0e-4 
+lr_critic = 5.0e-4
 
 class MADDPG:
     def __init__(self, discount_factor=0.95, tau=0.02):
