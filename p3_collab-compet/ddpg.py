@@ -37,10 +37,19 @@ class DDPGAgent:
         self.critic_optimizer = Adam(self.critic.parameters(), lr=lr_critic, weight_decay = WEIGHT_DECAY)
 
 
-    def act(self, obs, noise=0.0):
+    def act(self, obs, noise=0.0, no_grad=False):
         obs = obs.to(device)
+
+        if no_grad:
+            self.actor.eval()
+            with torch.no_grad():
+                action = self.actor(obs).detach()
+            self.actor.train()
+        else:
+            action = self.actor(obs)
+            
         ounoise = self.noise.noise().to(device)
-        action = self.actor(obs) + noise*ounoise
+        action += noise*ounoise
         return torch.clamp(action, -1, 1)
 
     def target_act(self, obs, noise=0.0):
