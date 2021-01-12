@@ -69,17 +69,27 @@ maddpg = MADDPG(discount_factor=0.99, tau=1e-4)
 logger = SummaryWriter(log_dir=log_path)
 
 print_every=100
-scores_deque = deque(maxlen=100)
+scores_deque = deque(maxlen=print_every)
 
 agent0_reward = []
 agent1_reward = []
 
 obs_iter = 0 
 
+import progressbar as pb
+# all the metrics progressbar will keep track of
+widget = ['episode: ', pb.Counter(),'/',str(number_of_episodes),' ',
+            pb.DynamicMessage('a0_avg_score'), ' ',
+            pb.DynamicMessage('a1_avg_score'), ' ',
+            pb.DynamicMessage('final_score'), ' ',
+            pb.DynamicMessage('noise_scale'), ' ',
+            pb.DynamicMessage('buffer_size'), ' ',
+            pb.ETA(), ' ', pb.Bar(marker=pb.RotatingMarker()), ' ' ] 
 
+timer = pb.ProgressBar(widgets=widget, maxval=number_of_episodes).start() # progressbar
 
 for episode in range(0, number_of_episodes):
-    
+   
     reward_this_episode = np.zeros((parallel_envs, num_agents))
     env_info = env.reset(train_mode=True)[brain_name] 
     all_obs = env_info.vector_observations
@@ -87,15 +97,13 @@ for episode in range(0, number_of_episodes):
     obs = [list(all_obs)]
     obs_full= [np.concatenate(all_obs)]
 
-    save_info = ((episode) % save_interval == 0 or episode==number_of_episodes-parallel_envs)
+    noise *= noise_reduction
+    logger.add_scalars('noise/scale', {'noise': noise}, episode)
 
     while True:
         # explore = only explore for a certain number of episodes
         # action input needs to be transposed
         actions = maddpg.act(transpose_to_tensor(obs), noise=noise)
-        noise *= noise_reduction
-        logger.add_scalars('noise/scale', {'noise': noise}, obs_iter)
-
         actions_array = torch.stack(actions).detach().cpu().numpy()
 
         # transpose the list of list
@@ -139,19 +147,20 @@ for episode in range(0, number_of_episodes):
 
     if episode % 1 == 0 or episode == number_of_episodes-1:
         avg_rewards = [np.mean(agent0_reward), np.mean(agent1_reward)]
-        max_rewards = [np.max(agent0_reward), np.max(agent1_reward)]
-        agent0_reward = []
-        agent1_reward = []
+        max_rewards = [np.max(agent0_reward),  np.max(agent1_reward) ]
         for a_i, avg_rew in enumerate(avg_rewards):
             logger.add_scalar('agent%i/mean_episode_rewards' % a_i, avg_rew, episode)
         for a_i, max_rew in enumerate(max_rewards):
             logger.add_scalar('agent%i/max_episode_rewards' % a_i, max_rew, episode)
 
     scores_deque.append(reward_this_episode[0].max())
-    print("episodes {}: Max reward is {}".format(episode, reward_this_episode[0].max()))
     score_average = np.mean(scores_deque)
     logger.add_scalar('result/results', score_average, episode)
 
+    timer.update(episode, a0_avg_score=agent0_reward[-1], a1_avg_score=agent1_reward[-1], 
+                 final_score=score_average, noise_scale=noise, buffer_size=len(buffer)) # progressbar
+
+    save_info = ((episode) % save_interval == 0 or episode==number_of_episodes-parallel_envs)
     save_dict_list =[]
     if save_info:
         for i in range(num_agents):
@@ -164,3 +173,4 @@ for episode in range(0, number_of_episodes):
 
 env.close()
 logger.close()
+timer.close()

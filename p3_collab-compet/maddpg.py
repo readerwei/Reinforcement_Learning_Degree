@@ -46,7 +46,7 @@ class MADDPG:
 
     def act(self, obs_all_agents, noise=0.0):
         """get actions from all agents in the MADDPG object"""
-        actions = [agent.act(obs, noise) for agent, obs in zip(
+        actions = [agent.act(obs, noise, no_grad=True) for agent, obs in zip(
             self.maddpg_agent, obs_all_agents)]
         return actions
 
