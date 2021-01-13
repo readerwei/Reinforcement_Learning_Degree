@@ -9,22 +9,22 @@ import numpy as np
 
 # add OU noise for exploration
 from OUNoise import OUNoise
-NOISE_SIGMA = 0.2      # sigma for Ornstein-Uhlenbeck noise
+
+NOISE_SIGMA = 0.1      # sigma for Ornstein-Uhlenbeck noise
 NOISE_THETA = 0.15
-WEIGHT_DECAY = 0 
+WEIGHT_DECAY = 0.0001 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-
+# device = "cpu"
 
 class DDPGAgent:
-    def __init__(self, in_actor, hidden_in_actor, hidden_out_actor, out_actor, in_critic, hidden_in_critic, hidden_out_critic, lr_actor=1.0e-2, lr_critic=1.0e-2):
+    def __init__(self, in_actor, hidden_in_actor, hidden_out_actor, out_actor, in_critic, hidden_in_critic, hidden_out_critic, in_action=4, lr_actor=1.0e-2, lr_critic=1.0e-2):
         super(DDPGAgent, self).__init__()
 
         self.actor = Network(in_actor, hidden_in_actor, hidden_out_actor, out_actor, actor=True).to(device)
-        self.critic = Network(in_critic, hidden_in_critic, hidden_out_critic, 1).to(device)
+        self.critic = Network(in_critic, hidden_in_critic, hidden_out_critic, 1, actions_size=in_action).to(device)
         self.target_actor = Network(in_actor, hidden_in_actor, hidden_out_actor, out_actor, actor=True).to(device)
-        self.target_critic = Network(in_critic, hidden_in_critic, hidden_out_critic, 1).to(device)
+        self.target_critic = Network(in_critic, hidden_in_critic, hidden_out_critic, 1, actions_size=in_action).to(device)
 
         self.noise = OUNoise(out_actor, scale=1.0, theta=NOISE_THETA, sigma=NOISE_SIGMA)
 
@@ -39,15 +39,14 @@ class DDPGAgent:
 
     def act(self, obs, noise=0.0, no_grad=False):
         obs = obs.to(device)
-
-        if no_grad:
-            self.actor.eval()
-            with torch.no_grad():
-                action = self.actor(obs).detach()
-            self.actor.train()
-        else:
-            action = self.actor(obs)
-            
+        # if no_grad:
+        #     self.actor.eval()
+        #     with torch.no_grad():
+        #         action = self.actor(obs).detach()
+        #     self.actor.train()
+        # else:
+        #     action = self.actor(obs)
+        action  = self.actor(obs)
         ounoise = self.noise.noise().to(device)
         action += noise*ounoise
         return torch.clamp(action, -1, 1)

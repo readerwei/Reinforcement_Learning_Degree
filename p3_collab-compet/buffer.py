@@ -17,7 +17,6 @@ class ReplayBuffer:
     def sample(self, batchsize):
         """sample from the buffer"""
         samples = random.sample(self.deque, batchsize)
-
         # transpose list of list
         return transpose_list(samples)
 

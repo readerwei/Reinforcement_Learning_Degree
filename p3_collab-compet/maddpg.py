@@ -10,24 +10,31 @@ import torch.nn.functional as F
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-print("\n Device for computation: {}".format(device))
 # device = 'cpu'
+print("\n Device for computation: {}".format(device))
 
-Actor_LAYER_1 = 256 
-Actor_LAYER_2 = 64
-Critic_LAYER_1 = 512
+
+Actor_INPUT = 24
+num_agents  = 2
+Critic_INPUT = Actor_INPUT * num_agents
+action_size = 2
+c_action_size = action_size * num_agents
+
+Actor_LAYER_1 = 128 
+Actor_LAYER_2 = 128
+Critic_LAYER_1 = 128
 Critic_LAYER_2 = 128
 
-lr_actor  = 5.0e-4 
-lr_critic = 5.0e-4
+lr_actor  = 9.0e-3 
+lr_critic = 1.0e-3
 
 class MADDPG:
     def __init__(self, discount_factor=0.95, tau=0.02):
         super(MADDPG, self).__init__()
 
         # critic input = obs_full + actions = 24+24+2+2=52
-        self.maddpg_agent = [DDPGAgent(24, Actor_LAYER_1, Actor_LAYER_2, 2, 52, Critic_LAYER_1, Critic_LAYER_2, lr_actor, lr_critic),
-                             DDPGAgent(24, Actor_LAYER_1, Actor_LAYER_2, 2, 52, Critic_LAYER_1, Critic_LAYER_2, lr_actor, lr_critic)]
+        self.maddpg_agent = [DDPGAgent(Actor_INPUT, Actor_LAYER_1, Actor_LAYER_2, action_size, Critic_INPUT, Critic_LAYER_1, Critic_LAYER_2, c_action_size, lr_actor, lr_critic),
+                             DDPGAgent(Actor_INPUT, Actor_LAYER_1, Actor_LAYER_2, action_size, Critic_INPUT, Critic_LAYER_1, Critic_LAYER_2, c_action_size, lr_actor, lr_critic)]
 
         self.discount_factor = discount_factor
         self.tau = tau
@@ -40,20 +47,17 @@ class MADDPG:
 
     def get_target_actors(self):
         """get target_actors of all the agents in the MADDPG object"""
-        target_actors = [
-            ddpg_agent.target_actor for ddpg_agent in self.maddpg_agent]
+        target_actors = [ddpg_agent.target_actor for ddpg_agent in self.maddpg_agent]
         return target_actors
 
     def act(self, obs_all_agents, noise=0.0):
         """get actions from all agents in the MADDPG object"""
-        actions = [agent.act(obs, noise, no_grad=True) for agent, obs in zip(
-            self.maddpg_agent, obs_all_agents)]
+        actions = [agent.act(obs, noise) for agent, obs in zip(self.maddpg_agent, obs_all_agents)]
         return actions
 
     def target_act(self, obs_all_agents, noise=0.0):
         """get target network actions from all the agents in the MADDPG object """
-        target_actions = [ddpg_agent.target_act(
-            obs, noise) for ddpg_agent, obs in zip(self.maddpg_agent, obs_all_agents)]
+        target_actions = [ddpg_agent.target_act(obs) for ddpg_agent, obs in zip(self.maddpg_agent, obs_all_agents)]
         return target_actions
 
     def update(self, samples, agent_number, logger):
@@ -79,11 +83,11 @@ class MADDPG:
         target_critic_input = torch.cat((next_obs_full.t(), target_actions), dim=1)
 
         with torch.no_grad():
+            # q_next = agent.target_critic(target_critic_input)
             q_next = agent.target_critic(target_critic_input)
-        # q_next = agent.target_critic(target_critic_input)
+            y = reward[agent_number].view(-1, 1) + self.discount_factor * \
+                q_next * (1 - done[agent_number].view(-1, 1))
 
-        y = reward[agent_number].view(-1, 1) + self.discount_factor * \
-            q_next * (1 - done[agent_number].view(-1, 1))
         action = torch.cat(action, dim=1)
         critic_input = torch.cat((obs_full.t(), action), dim=1)
         q = agent.critic(critic_input)
@@ -92,7 +96,7 @@ class MADDPG:
         # critic_loss = huber_loss(q, y.detach())
         critic_loss = F.mse_loss(q, y.detach())
         critic_loss.backward()
-        #torch.nn.utils.clip_grad_norm_(agent.critic.parameters(), 0.5)
+        torch.nn.utils.clip_grad_norm_(agent.critic.parameters(), 1)
         agent.critic_optimizer.step()
 
         # update actor network using policy gradient
