@@ -9,24 +9,31 @@ def hidden_init(layer):
     return (-lim, lim)
 
 class Network(nn.Module):
-    def __init__(self, input_dim, hidden_in_dim, hidden_out_dim, output_dim, actor=False):
+    def __init__(self, input_dim, hidden_in_dim, hidden_out_dim, output_dim, actions_size=0, actor=False):
         super(Network, self).__init__()
 
         """self.input_norm = nn.BatchNorm1d(input_dim)
         self.input_norm.weight.data.fill_(1)
         self.input_norm.bias.data.fill_(0)"""
-
-        self.fc1 = nn.Linear(input_dim,hidden_in_dim)
-        self.fc2 = nn.Linear(hidden_in_dim,hidden_out_dim)
-        self.fc3 = nn.Linear(hidden_out_dim,output_dim)
         self.nonlin = f.relu #leaky_relu
         self.actor = actor
-        #self.reset_parameters()
+        self.action_size = actions_size
+
+        self.fc1 = nn.Linear(input_dim,hidden_in_dim)
+        if self.actor:
+            self.fc2 = nn.Linear(hidden_in_dim,hidden_out_dim)
+        else:
+            self.fc2 = nn.Linear(hidden_in_dim + actions_size, hidden_out_dim)
+        self.fc3 = nn.Linear(hidden_out_dim,output_dim)
+        
+        self.reset_parameters()
 
     def reset_parameters(self):
         self.fc1.weight.data.uniform_(*hidden_init(self.fc1))
         self.fc2.weight.data.uniform_(*hidden_init(self.fc2))
-        self.fc3.weight.data.uniform_(-1e-3, 1e-3)
+        # self.fc1.weight.data.uniform_(-3e-2, 3e-2)
+        # self.fc2.weight.data.uniform_(-3e-2, 3e-2)
+        self.fc3.weight.data.uniform_(-3e-1, 3e-1)
 
     def forward(self, x):
         if self.actor:
@@ -41,7 +48,10 @@ class Network(nn.Module):
         
         else:
             # critic network simply outputs a number
-            h1 = self.nonlin(self.fc1(x))
-            h2 = self.nonlin(self.fc2(h1))
+            actions=x[:,  -self.action_size:]
+            state = x[:, :-self.action_size ]
+            h1 = self.nonlin(self.fc1(state))
+            h1_cat = torch.cat([h1, actions], dim=1)
+            h2 = self.nonlin(self.fc2(h1_cat))
             h3 = self.fc3(h2)
             return h3

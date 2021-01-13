@@ -6,6 +6,7 @@ from torch.autograd import Variable
 import numpy as np
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# device = "cpu"
 
 def transpose_list(mylist):
     return list(map(list, zip(*mylist)))
