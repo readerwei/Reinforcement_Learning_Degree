@@ -20,12 +20,12 @@ Critic_INPUT = Actor_INPUT * num_agents
 action_size = 2
 c_action_size = action_size * num_agents
 
-Actor_LAYER_1 = 128 
-Actor_LAYER_2 = 128
-Critic_LAYER_1 = 128
-Critic_LAYER_2 = 128
+Actor_LAYER_1 = 512 
+Actor_LAYER_2 = 256
+Critic_LAYER_1 = 512
+Critic_LAYER_2 = 256
 
-lr_actor  = 9.0e-3 
+lr_actor  = 1.0e-2
 lr_critic = 1.0e-3
 
 class MADDPG:
