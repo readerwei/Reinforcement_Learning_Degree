@@ -51,7 +51,7 @@ t = 0
 
 # amplitude of OU noise, this slowly decreases to 0
 noise = 1.0
-noise_reduction = 0.998
+EPSILON_DECAY = 0.998
 noise_low_threshold = 0.05
 
 # how many episodes before update
@@ -68,9 +68,9 @@ buffersize = int(5e4)
 buffer = ReplayBuffer(buffersize)
 
 # initialize policy and critic
-val_disc = 0.99 
-val_tau = 1e-2
-maddpg = MADDPG(discount_factor=val_disc, tau=val_tau)
+GAMMA = 0.99 
+TAU   = 1e-2
+maddpg = MADDPG(discount_factor=GAMMA, tau=TAU)
 logger = SummaryWriter(log_dir=log_path)
 
 hyper_dict   = {"number_of_episodes": number_of_episodes, 
@@ -78,10 +78,10 @@ hyper_dict   = {"number_of_episodes": number_of_episodes,
                 "learn_per_episode": learn_per_episode, 
                 "batchsize": batchsize, 
                 "noise_start_scale" : noise,
-                "noise_reduction": noise_reduction,
+                "noise_reduction": EPSILON_DECAY,
                 "noise_low_threshold": noise_low_threshold,
-                "discount_factor" : val_disc, 
-                "tau" : val_tau
+                "discount_factor" : GAMMA, 
+                "tau" : TAU
                }
 torch.save(hyper_dict, os.path.join(model_dir, 'hyperparam.pt'))
 
@@ -196,7 +196,7 @@ for episode in range(0, number_of_episodes):
     logger.add_scalar('result/final_metric', score_average, episode)
 
     if train_flag and noise_chg and noise >= noise_low_threshold:
-        noise *= noise_reduction
+        noise *= EPSILON_DECAY
     logger.add_scalars('noise/scale', {'noise': noise}, episode)
 
     timer.update(episode, a0_score=agent0_reward[-1], a1_score=agent1_reward[-1],

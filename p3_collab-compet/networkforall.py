@@ -47,11 +47,12 @@ class Network(nn.Module):
             return action
         
         else:
-            # critic network simply outputs a number
+            # critic first layer takes only the state space inputs and 2nd later will incorprate action space results
             actions=x[:,  -self.action_size:]
             state = x[:, :-self.action_size ]
             h1 = self.nonlin(self.fc1(state))
             h1_cat = torch.cat([h1, actions], dim=1)
             h2 = self.nonlin(self.fc2(h1_cat))
             h3 = self.fc3(h2)
+            # critic network simply outputs a number
             return h3
