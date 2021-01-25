@@ -3,6 +3,7 @@ import shutil
 from datetime import datetime
 from collections import deque
 import numpy as np
+import progressbar as pb
 
 import torch
 # from torch.utils.tensorboard import SummaryWriter
@@ -96,7 +97,7 @@ agent_scores_last_100 = [deque(maxlen = 100),deque(maxlen = 100)]
 agent_scores_avg      = np.zeros(num_agents)
 
 obs_iter = 0 
-import progressbar as pb
+
 # all the metrics progressbar will keep track of
 widget = ['episode: ', pb.Counter(),'/',str(number_of_episodes),' ',
             pb.DynamicMessage('a0_score'), ' ',
