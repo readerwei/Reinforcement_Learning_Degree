@@ -54,4 +54,4 @@ Start the script in `main_tennis.py` to get started with training your own agent
 
 ### Report
 
-TThe detailed algorithms and training results are documented in the `Report.ipynb`.
+The detailed algorithms and training results are documented in the `Report.ipynb`.
