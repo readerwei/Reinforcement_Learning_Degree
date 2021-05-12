@@ -50,8 +50,8 @@ The environment is considered solved, when the average (over 100 episodes) of th
 
 ### Instructions
 
-Start the script in `main_tennis.py` to get started with training your own agent. And, follow instructions in `trained_agent.ipynb` to get a show from the smart agents!  
+Start the script in `main_tennis.py` to get started with training your own agent. And, follow instructions in [`trained_agent.ipynb`](https://github.com/readerwei/Reinforcement_Learning_Degree/blob/master/p3_collab-compet/trained_agent.ipynb) to get a show from the smart agents!  
 
 ### Report
 
-The detailed algorithms and training results are documented in the `Report.ipynb`.
+The detailed algorithms and training results are documented in the [`Report.ipynb`](https://github.com/readerwei/Reinforcement_Learning_Degree/blob/master/p3_collab-compet/Report.ipynb).
